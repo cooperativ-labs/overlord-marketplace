@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "knowledgebase": {
+      "type": "http",
+      "url": "https://knowledge.chaselubitz.com/mcp"
+    }
+  }
+}

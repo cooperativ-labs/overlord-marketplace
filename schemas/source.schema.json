@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cooperativ-labs/overlord-marketplace/schemas/source.schema.json",
+  "title": "Overlord marketplace source pointer",
+  "description": "Hand-reviewed pointer to a plugin's public release artifacts and the policy they must satisfy. Lives at sources/<plugin>.json. See docs/contracts.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema", "schemaVersion", "plugin", "deploymentUrl", "index", "surfacePolicy", "hosts",
+    "allowedMcpOrigins", "allowedMcpUrls", "expectedMcpServers",
+    "maxArtifactBytes", "maxExpandedBytes", "maxFileBytes", "maxEntries"
+  ],
+  "properties": {
+    "$schema": { "const": "../schemas/source.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "plugin": { "$ref": "#/$defs/pluginId" },
+    "deploymentUrl": {
+      "description": "Canonical HTTPS origin of the deployment, with no path, query, fragment, port or userinfo.",
+      "$ref": "#/$defs/httpsOrigin"
+    },
+    "index": {
+      "description": "Absolute path of the release index on deploymentUrl.",
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^(/[A-Za-z0-9._~-]+)+$"
+    },
+    "surfacePolicy": {
+      "description": "Executable-surface policy the packages must satisfy. v1 admits only remote HTTPS MCP servers, skills and static assets.",
+      "enum": ["remote-http-mcp-only"]
+    },
+    "hosts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["codex", "claude-code"],
+      "properties": {
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["indexField", "zipRoot", "target", "manifest", "catalogEntry"],
+          "properties": {
+            "indexField": { "$ref": "#/$defs/indexField" },
+            "zipRoot": { "$ref": "#/$defs/zipRoot" },
+            "target": { "$ref": "#/$defs/target" },
+            "manifest": { "enum": ["plugin.json", ".codex-plugin/plugin.json"] },
+            "catalogEntry": {
+              "description": "Reviewed Codex catalog fields. name and source are derived and may not be set here; version comes from the plugin manifest.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["policy", "category"],
+              "properties": {
+                "policy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["installation", "authentication"],
+                  "properties": {
+                    "installation": { "description": "INSTALLED_BY_DEFAULT is excluded by policy: users opt in to every plugin.", "enum": ["AVAILABLE", "NOT_AVAILABLE"] },
+                    "authentication": { "enum": ["ON_INSTALL", "ON_USE"] }
+                  }
+                },
+                "category": { "$ref": "#/$defs/label" }
+              }
+            }
+          }
+        },
+        "claude-code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["indexField", "zipRoot", "target", "manifest", "catalogEntry"],
+          "properties": {
+            "indexField": { "$ref": "#/$defs/indexField" },
+            "zipRoot": { "$ref": "#/$defs/zipRoot" },
+            "target": { "$ref": "#/$defs/target" },
+            "manifest": { "const": ".claude-plugin/plugin.json" },
+            "catalogEntry": {
+              "description": "Reviewed Claude Code catalog fields. name and source are derived and may not be set here; version comes from the plugin manifest.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["description", "category"],
+              "properties": {
+                "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+                "category": { "$ref": "#/$defs/label" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "allowedMcpOrigins": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/httpsOrigin" }
+    },
+    "allowedMcpUrls": {
+      "description": "Exact MCP endpoint URLs the rendered packages may register. Each must be on an allowed origin.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "type": "string", "maxLength": 512, "pattern": "^https://[a-z0-9.-]+(/[A-Za-z0-9._~-]+)+$" }
+    },
+    "expectedMcpServers": {
+      "description": "Exact set of MCP server names the packages must register, in every host.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" }
+    },
+    "maxArtifactBytes": { "type": "integer", "minimum": 1, "maximum": 50000000 },
+    "maxExpandedBytes": { "type": "integer", "minimum": 1, "maximum": 200000000 },
+    "maxFileBytes": { "type": "integer", "minimum": 1, "maximum": 2000000 },
+    "maxEntries": { "type": "integer", "minimum": 1, "maximum": 5000 }
+  },
+  "$defs": {
+    "pluginId": { "type": "string", "maxLength": 64, "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+    "httpsOrigin": { "type": "string", "maxLength": 256, "pattern": "^https://[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$" },
+    "indexField": { "type": "string", "maxLength": 128, "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$" },
+    "zipRoot": {
+      "description": "Archive prefix stripped exactly once. Either empty (package at the archive root) or one directory segment with a trailing slash.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^([a-z0-9][a-z0-9_-]*/)?$"
+    },
+    "target": { "type": "string", "maxLength": 128, "pattern": "^plugins/(codex|claude-code)/[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+    "label": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z][A-Za-z0-9 &-]*$" }
+  }
+}

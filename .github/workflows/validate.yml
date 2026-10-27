@@ -1,0 +1,170 @@
+# Validates every candidate: repository policy, immutable-baseline comparison, secrets,
+# and native Codex/Claude Code install and upgrade in isolated homes. Receives no secrets.
+# Branch rules require only the aggregate job named `validate`.
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Baseline host CLIs. Move forward only after cli-drift.yml passes with the new versions.
+  CODEX_VERSION: 0.164.0
+  CLAUDE_CODE_VERSION: 2.1.311
+  GITLEAKS_VERSION: 8.30.1
+  GITLEAKS_LINUX_X64_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+  DISABLE_AUTOUPDATER: '1'
+  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
+
+jobs:
+  checks:
+    name: checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Resolve immutable baseline
+        id: base
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p ci-results
+          if [ "$EVENT_NAME" = pull_request ]; then
+            node scripts/ci.mjs baseline --sha "$PR_BASE_SHA"
+          else
+            echo "base=" >> "$GITHUB_OUTPUT"
+            echo "push to main: validating the candidate alone"
+          fi
+      - name: Prerequisites
+        run: npm run prereqs
+      - name: Unit and policy tests
+        run: npm test
+      - name: Repository validation
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          args=(--json)
+          if [ -n "$BASE" ]; then args+=(--base "$BASE"); fi
+          set +e
+          node scripts/validate.mjs "${args[@]}" > ci-results/validate.json
+          status=$?
+          set -e
+          cat ci-results/validate.json
+          exit "$status"
+      - name: Install baseline host CLIs
+        run: |
+          npm install -g "@openai/codex@${CODEX_VERSION}" "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          codex --version | tee ci-results/versions.txt
+          claude --version | tee -a ci-results/versions.txt
+          codex --version | grep -F "$CODEX_VERSION"
+          claude --version | grep -F "$CLAUDE_CODE_VERSION"
+          npm run prereqs -- --hosts
+      - name: Claude marketplace and package validation
+        run: |
+          claude plugin validate .
+          shopt -s nullglob
+          for dir in plugins/claude-code/*/; do claude plugin validate "$dir"; done
+      - name: Synthetic A to B smoke (first addition, upgrade, docs-only)
+        run: node scripts/synthetic-smoke.mjs --matrix 2>&1 | tee ci-results/synthetic-smoke.log
+      - name: Plan released-plugin smoke
+        id: plan
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          if [ -n "$BASE" ]; then node scripts/ci.mjs smoke-plan --base "$BASE"; else node scripts/ci.mjs smoke-plan; fi
+      - name: Released-plugin smoke
+        env:
+          MODE: ${{ steps.plan.outputs.mode }}
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          case "$MODE" in
+            bootstrap) echo "bootstrap: no plugin has been released yet; the synthetic smoke above is the native-host gate" | tee ci-results/smoke.log ;;
+            fresh) bash scripts/smoke.sh . 2>&1 | tee ci-results/smoke.log ;;
+            compare) bash scripts/smoke.sh . --upgrade-from "$BASE" 2>&1 | tee ci-results/smoke.log ;;
+            *) echo "::error::unknown smoke mode"; exit 1 ;;
+          esac
+      - name: Redact results
+        if: always()
+        run: |
+          shopt -s nullglob
+          for f in ci-results/*; do sed -i.bak -e "s#${HOME}#~#g" "$f" && rm -f "$f.bak"; done
+          git rev-parse HEAD > ci-results/candidate-sha.txt
+          if [ -f sources/knowledgebase.lock.json ]; then cp sources/knowledgebase.lock.json ci-results/; fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: validate-${{ matrix.os }}
+          path: ci-results/
+          retention-days: 14
+          if-no-files-found: warn
+
+  distribution-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Install pinned Gitleaks
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_LINUX_X64_SHA256}  $RUNNER_TEMP/$archive" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" version
+      - name: Secret scan (directory mode, full distribution tree)
+        run: |
+          "$RUNNER_TEMP/gitleaks" dir . --config .gitleaks.toml --redact --no-banner --exit-code 1 \
+            --report-format json --report-path "$RUNNER_TEMP/gitleaks.json"
+      - name: Personal paths and email addresses
+        run: node scripts/ci.mjs audit
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: distribution-scan
+          path: ${{ runner.temp }}/gitleaks.json
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The only required status check. It fails on any failed, cancelled or skipped dependency.
+  validate:
+    if: always()
+    needs: [checks, distribution-scan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every check
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$NEEDS" | jq -e 'length == 2 and (to_entries | all(.value.result == "success"))' > /dev/null

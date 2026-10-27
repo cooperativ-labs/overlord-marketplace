@@ -1,0 +1,22 @@
+{
+  "lockVersion": 1,
+  "plugin": "knowledgebase",
+  "version": "0.1.1",
+  "sourceSha256": "cd98bff143f575c80be04fb1aa69a45bcc9421e24fbf380693e4bca7de586aaa",
+  "indexSha256": "ef8f8d8c3827c76d9d5c76d3cc154c9a2ec6cef67d6d64acbba783d45e044348",
+  "fetchedAt": "2026-10-27T13:27:10.142Z",
+  "hosts": {
+    "codex": {
+      "url": "https://knowledge.chaselubitz.com/plugins/knowledgebase-chatgpt.zip",
+      "zipSha256": "d8e16d43995ff016d90a3807311849deac2289bffc4e123a7ad3ff824f916a93",
+      "treeSha256": "1b8163de370c25490a4ea21a67f1cc197b421b4191a19af636eac1722d43bf69",
+      "fileCount": 7
+    },
+    "claude-code": {
+      "url": "https://knowledge.chaselubitz.com/plugins/knowledgebase-claude-code.zip",
+      "zipSha256": "e1ce2349e6064ac8a10e386bb8ea4e2cbeaf66bf22a83b3cb6af2987b8184a03",
+      "treeSha256": "cb89d28689a9c627d0eab729db900512a29ea002bfa1a66fdd0f39eacf4ab560",
+      "fileCount": 5
+    }
+  }
+}

@@ -1,0 +1,17 @@
+# Gitleaks configuration for the distribution scan in .github/workflows/validate.yml.
+# Complements the structural package policy in scripts/lib/package.mjs; it does not replace it.
+# Every exclusion below is narrow and reviewed. Do not add broad path exclusions.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Git object storage is not part of the distribution tree"
+paths = ['''^\.git/''']
+
+[[allowlists]]
+description = "Deliberately fake token that tests the package secret gate"
+condition = "AND"
+paths = ['''^test/package-validation\.test\.mjs$''']
+regexTarget = "match"
+regexes = ['''ghp_abcdefghijklmnopqrstuvwxyz123456''']

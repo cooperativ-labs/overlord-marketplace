@@ -1,0 +1,37 @@
+{
+  "$schema": "../schemas/source.schema.json",
+  "schemaVersion": 1,
+  "plugin": "knowledgebase",
+  "deploymentUrl": "https://knowledge.chaselubitz.com",
+  "index": "/plugins/index.json",
+  "surfacePolicy": "remote-http-mcp-only",
+  "hosts": {
+    "codex": {
+      "indexField": "codex.plugin_package",
+      "zipRoot": "knowledgebase/",
+      "target": "plugins/codex/knowledgebase",
+      "manifest": "plugin.json",
+      "catalogEntry": {
+        "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+        "category": "Productivity"
+      }
+    },
+    "claude-code": {
+      "indexField": "claude.claude_code.plugin_package",
+      "zipRoot": "",
+      "target": "plugins/claude-code/knowledgebase",
+      "manifest": ".claude-plugin/plugin.json",
+      "catalogEntry": {
+        "description": "Search, read, and write your Knowledgebase knowledge graph.",
+        "category": "productivity"
+      }
+    }
+  },
+  "allowedMcpOrigins": ["https://knowledge.chaselubitz.com"],
+  "allowedMcpUrls": ["https://knowledge.chaselubitz.com/mcp"],
+  "expectedMcpServers": ["knowledgebase"],
+  "maxArtifactBytes": 5000000,
+  "maxExpandedBytes": 20000000,
+  "maxFileBytes": 2000000,
+  "maxEntries": 500
+}

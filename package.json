@@ -1,0 +1,19 @@
+{
+  "name": "overlord-marketplace",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Git-backed Codex and Claude Code plugin marketplace maintained by the Overlord project.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prereqs": "node scripts/prereqs.mjs",
+    "validate": "node scripts/validate.mjs",
+    "ingest": "node scripts/ingest.mjs",
+    "smoke": "bash scripts/smoke.sh",
+    "smoke:synthetic": "node scripts/synthetic-smoke.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  }
+}

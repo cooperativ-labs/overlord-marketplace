@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "knowledgebase",
+  "version": "0.1.1",
+  "description": "Search, read, and write a typed knowledge graph of notes, people, projects, meetings, and transcripts.",
+  "author": {
+    "name": "Knowledgebase",
+    "url": "https://knowledge.chaselubitz.com"
+  },
+  "homepage": "https://knowledge.chaselubitz.com",
+  "license": "UNLICENSED",
+  "keywords": ["knowledgebase", "notes", "knowledge graph", "mcp", "wiki", "transcripts"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Knowledgebase",
+        "shortDescription": "Your linked notes and knowledge graph",
+        "longDescription": "Connects ChatGPT and Codex to your Knowledgebase at https://knowledge.chaselubitz.com. Search the knowledge graph, read pages and resources such as meeting transcripts, write notes that link the people, projects, and companies they mention, and follow relations between them. Every action runs as you, after you sign in, and can be restricted or revoked in Settings → Connected agents.",
+        "developerName": "Knowledgebase",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://knowledge.chaselubitz.com",
+        "defaultPrompt": [
+          "Summarize what my knowledgebase says about a project and list the people involved",
+          "Write a meeting note in my knowledgebase and link it to the attendees and the project",
+          "What changed in my knowledgebase this week?"
+        ],
+        "brandColor": "#3557D6",
+        "composerIcon": "./assets/icon-128.png",
+        "logo": "./assets/icon.png"
+      }
+    }
+  }
+}

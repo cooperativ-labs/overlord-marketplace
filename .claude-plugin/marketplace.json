@@ -1,0 +1,16 @@
+{
+  "name": "Overlord",
+  "description": "Agent plugins maintained by the Overlord project.",
+  "owner": {
+    "name": "Cooperativ",
+    "url": "https://www.ovld.ai"
+  },
+  "plugins": [
+    {
+      "name": "knowledgebase",
+      "source": "./plugins/claude-code/knowledgebase",
+      "description": "Search, read, and write your Knowledgebase knowledge graph.",
+      "category": "productivity"
+    }
+  ]
+}

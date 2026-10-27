@@ -1,0 +1,123 @@
+# Polls each reviewed source for a new public release and opens or updates a human-reviewed
+# PR on the bot-owned branch sync/<plugin>. It never pushes to main and never auto-merges.
+# Requires repository variable MARKETPLACE_APP_CLIENT_ID and secret MARKETPLACE_APP_PRIVATE_KEY
+# (see RELEASING.md). Only the publish job mints the App token.
+name: ingest
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: 'Source id from sources/<id>.json, or "all"'
+        required: true
+        default: all
+        type: string
+  repository_dispatch:
+    types: [plugin-release]
+
+permissions:
+  contents: read
+
+# One writer for every trigger and plugin: the catalogs are shared. A run in progress is
+# never cancelled; GitHub keeps only the newest pending run, and the next poll catches up.
+concurrency:
+  group: overlord-marketplace-catalog-writer
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      base: ${{ steps.prepare.outputs.base }}
+      publish: ${{ steps.prepare.outputs.publish }}
+    steps:
+      - name: Require trusted default-branch code
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [ "$REF" != refs/heads/main ]; then
+            echo "::error::ingest runs only from main, not $REF"
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Prerequisites
+        run: npm run prereqs
+      - name: Resolve plugins
+        id: plugins
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          # Untrusted text: validated against source ids by scripts/ci.mjs, never run as shell.
+          PLUGIN_REQUEST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.plugin || inputs.plugin }}
+        run: node scripts/ci.mjs resolve-plugins --event "$EVENT_NAME"
+      - name: Ingest without credentials
+        id: prepare
+        env:
+          PLUGINS: ${{ steps.plugins.outputs.plugins }}
+        run: node scripts/ci.mjs prepare --plugins "$PLUGINS" --out "$RUNNER_TEMP/ingest-bundle"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.prepare.outputs.publish == 'true'
+        with:
+          name: ingest-bundle
+          path: ${{ runner.temp }}/ingest-bundle/
+          retention-days: 3
+          if-no-files-found: error
+      - name: Report ingest failures
+        if: steps.prepare.outputs.failed == 'true'
+        run: |
+          echo "::error::at least one plugin failed to ingest; the last good release stays in place (see the job summary)"
+          exit 1
+
+  publish:
+    needs: prepare
+    if: ${{ !cancelled() && needs.prepare.outputs.publish == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.base }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ingest-bundle
+          path: ${{ runner.temp }}/ingest-bundle
+      - name: Verify bundle without credentials
+        env:
+          BASE: ${{ needs.prepare.outputs.base }}
+        run: node scripts/ci.mjs verify-bundle --bundle "$RUNNER_TEMP/ingest-bundle" --base "$BASE"
+      # Short-lived installation token for this repository only, revoked when the job ends.
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ vars.MARKETPLACE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.MARKETPLACE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Push sync branches and open or update PRs
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+          BASE: ${{ needs.prepare.outputs.base }}
+        run: node scripts/ci.mjs publish --bundle "$RUNNER_TEMP/ingest-bundle" --base "$BASE"

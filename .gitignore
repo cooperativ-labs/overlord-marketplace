@@ -1,2 +1,8 @@
 .overlord/tmp/
 .overlord/logs/
+node_modules/
+.tmp/
+.smoke/
+.DS_Store
+ci-results/
+drift-results/
