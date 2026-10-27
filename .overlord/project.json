@@ -1,0 +1,24 @@
+{
+  "_warning": "STRICTLY PROTECTED: This file is managed exclusively by Overlord. Agents and users must not edit, replace, stage, commit, or delete it. Re-link the resource with Overlord to change it.",
+  "version": 3,
+  "projectId": "49763405-008f-4267-89e4-c57f5a234c91",
+  "resourceId": "087e7b02-09c2-408e-acaf-0b0428ca73bf",
+  "resourceKey": "marketplace",
+  "resourceIdsByExecutionTarget": {
+    "cf857924-0eb4-447d-b999-307c1411f094": "087e7b02-09c2-408e-acaf-0b0428ca73bf"
+  },
+  "isPrimary": false,
+  "linkedAt": "2026-10-27T08:57:25.620Z",
+  "projects": [
+    {
+      "projectId": "49763405-008f-4267-89e4-c57f5a234c91",
+      "resourceId": "087e7b02-09c2-408e-acaf-0b0428ca73bf",
+      "resourceKey": "marketplace",
+      "resourceIdsByExecutionTarget": {
+        "cf857924-0eb4-447d-b999-307c1411f094": "087e7b02-09c2-408e-acaf-0b0428ca73bf"
+      },
+      "isPrimary": false,
+      "linkedAt": "2026-10-27T08:57:25.620Z"
+    }
+  ]
+}
