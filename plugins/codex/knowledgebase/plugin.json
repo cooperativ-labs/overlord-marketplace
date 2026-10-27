@@ -1,14 +1,14 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "knowledgebase",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Search, read, and write a typed knowledge graph of notes, people, projects, meetings, and transcripts.",
   "author": {
     "name": "Knowledgebase",
     "url": "https://knowledge.chaselubitz.com"
   },
   "homepage": "https://knowledge.chaselubitz.com",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": ["knowledgebase", "notes", "knowledge graph", "mcp", "wiki", "transcripts"],
   "extensions": {
     "com.openai": {
