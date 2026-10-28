@@ -165,26 +165,20 @@ locally when Ruby is missing and fails in CI.
 | 1. Scaffold: catalogs, source pointer, schemas, ownership checks | Done locally |
 | 2. Validator, ZIP helper, ingest | Done locally |
 | 3–4. First ingest, isolated two-version smoke tests | Automated CLI checks done locally; authenticated and desktop gates pending |
-| 5. GitHub workflows | Authored and checked locally; **not activated** (nothing pushed) |
-| 6. Publication | Not authorized |
+| 5. GitHub workflows | Ingest/App, release-PR validate and post-merge Linux/macOS validate passed |
+| 6. Publication | Knowledgebase 0.1.2 published; public first install/unchanged refresh passed in both CLIs |
 
 ## Publication prerequisites
 
 The unchecked items remain publication gates; external actions need explicit authorization.
 
-- [ ] **Redistribution and notices.**
+- [x] **Redistribution and notices.**
   - On 2026-10-27 the owner added an MIT `LICENSE` to the Knowledgebase repository
     (upstream commit `a13ae23`).
-  - The released packages do not reflect it yet. Both 0.1.1 manifests still declare
-    `"license": "UNLICENSED"`, and neither ZIP includes license text. MIT requires the
-    copyright and permission notice to accompany copies.
-  - **Recommended:** an upstream Knowledgebase release (0.1.2 or later) that sets
-    `"license": "MIT"` in `packages/plugins/chatgpt/plugin.json` and
-    `packages/plugins/claude-code/.claude-plugin/plugin.json`, and ships `LICENSE` in
-    both rendered ZIPs. Ingest that release before publishing. Coordinate it through
-    per:214.
-  - **Alternative:** the owner records written permission here, with date and scope, to
-    publish 0.1.1 as shipped.
+  - Public Knowledgebase 0.1.2 was fetched and ingested on 2026-10-27. Both manifests
+    declare `"license": "MIT"`, and both rendered ZIPs include the full MIT `LICENSE`,
+    byte-identical to this repository's notice naming Jacob Chase-Lubitz.
+    Public main now packages 0.1.2 after release PR #1 merged.
   - Ingest never relabels or adds notices.
   - On 2026-10-27 the owner authorized MIT licensing for this repository's original
     tooling and documentation. The root `LICENSE` carries the full text and
@@ -193,18 +187,20 @@ The unchecked items remain publication gates; external actions need explicit aut
 - [ ] **Acceptance gates.** The final acceptance objective runs the complete Phases 2–5
       matrix. Host support is claimed only for gates that pass (see
       [Last verified](#last-verified)).
-- [ ] **Remote.** `https://github.com/cooperativ-labs/overlord-marketplace.git`. On
-      2026-10-27 its `main` was `66600f8` ("git init"), the base of this checkout.
+- [x] **Remote.** `https://github.com/cooperativ-labs/overlord-marketplace.git`. On
+      2026-10-27 its `main` was freshly verified at `2f825a7` (packaging 0.1.2).
       Recheck with `git ls-remote` before pushing. Build on the remote history; never
       force-push over it.
-- [ ] **Activation.** Pushing `.github/workflows/` enables the 6-hourly ingest schedule
-      and the weekly drift issue writer. Authorize that together with the push.
+- [x] **Activation.** Workflows are present on public main; the owner ran ingest and
+      merged its release PR. Client ID and private-key configuration produced the bot PR.
+      Additional agent dispatches or configuration changes still need authorization.
 
 ### Publication setup (after authorization)
 
-1. **Push.** Commit the reviewed candidate on top of `66600f8`, leaving
-   `.overlord/project.json` as Overlord manages it. Then run
-   `git push origin main` (no force).
+1. **Publish through a PR.** Preserve current remote history and leave
+   `.overlord/project.json` as Overlord manages it. Publish a review branch and merge
+   its PR after `validate` passes. Initial publication is complete; direct pushes to
+   `main` are protected by the ruleset.
 2. **Create the GitHub App.** In *GitHub → cooperativ-labs → Settings → Developer
    settings → GitHub Apps → New GitHub App*:
    - name it, for example, "Overlord Marketplace Bot";
@@ -231,7 +227,8 @@ The unchecked items remain publication gates; external actions need explicit aut
 4. **Actions settings.** Set default workflow permissions to read-only, and keep approval
    required for fork PRs from first-time contributors. "Allow GitHub Actions to create
    pull requests" is not needed, because the App opens the PRs.
-5. **Ruleset for `main`.** Require a PR with one approval, the status check `validate`,
+5. **Ruleset for `main`.** The owner selected a solo-maintainer policy: require a PR
+   with zero mandatory approvals, the status check `validate`,
    up-to-date branches and linear history. Block force pushes and deletion, with no
    bypass actors:
 
@@ -242,17 +239,19 @@ The unchecked items remain publication gates; external actions need explicit aut
     "bypass_actors": [],
     "rules": [
       {"type": "deletion"}, {"type": "non_fast_forward"}, {"type": "required_linear_history"},
-      {"type": "pull_request", "parameters": {"required_approving_review_count": 1,
-        "dismiss_stale_reviews_on_push": true, "require_code_owner_review": false,
-        "require_last_push_approval": true, "required_review_thread_resolution": false}},
+      {"type": "pull_request", "parameters": {"required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false, "require_code_owner_review": false,
+        "require_last_push_approval": false, "required_review_thread_resolution": false}},
       {"type": "required_status_checks", "parameters": {"strict_required_status_checks_policy": true,
         "required_status_checks": [{"context": "validate"}]}}]}
    JSON
    ```
 
-   One approval cannot come from the PR's author. A single maintainer can approve bot
-   release PRs but not their own tooling PRs. Decide on a second reviewer before
-   enabling this ruleset; removing review or adding a bypass weakens the release gate.
+   The maintainer reviews the diff and merges manually after CI passes. A second person
+   is not required. Keep the bypass list empty. The required check is the aggregate
+   `validate` check; requiring CodeQL results is a separate policy that needs an actual
+   CodeQL setup. The live ruleset matches the solo policy (stale-approval dismissal
+   remains enabled but does not require a reviewer when mandatory approvals are zero).
 6. **First runs.** Confirm `validate` passes on `main`. Then run
    `gh workflow run ingest.yml --repo cooperativ-labs/overlord-marketplace -f plugin=all`.
    Expect `up-to-date` in the job summary unless upstream has released since the
@@ -270,6 +269,70 @@ The unchecked items remain publication gates; external actions need explicit aut
    ingested and merged, and the native refresh commands load it in a fresh session.
 
 ## Last verified
+
+### Public Knowledgebase 0.1.2, 2026-10-27
+
+[Release PR #1](https://github.com/cooperativ-labs/overlord-marketplace/pull/1) merged
+at 17:39:37 UTC as `2f825a7968c232d091b95c44d49566321d1c5765`. Its Linux/macOS
+[validate run](https://github.com/cooperativ-labs/overlord-marketplace/actions/runs/40548374114)
+and the App-backed
+[ingest run](https://github.com/cooperativ-labs/overlord-marketplace/actions/runs/40548286911)
+passed. Post-merge [validate](https://github.com/cooperativ-labs/overlord-marketplace/actions/runs/40552681776)
+passed, including Linux/macOS checks, distribution scan and the aggregate `validate` job.
+
+Independently registered `cooperativ-labs/overlord-marketplace` in disposable profiles
+with Codex CLI 0.164.0 and Claude Code 2.1.311. Both installed/enabled
+`knowledgebase@Overlord` 0.1.2. Full installed trees, all three skill files and the exact
+Knowledgebase MCP endpoint matched the published lock. Native refresh against public
+GitHub left version/content unchanged. A fresh ingest in the public clone reported
+`up-to-date` with no ZIP changes. No real user plugin configuration or credentials were
+copied or modified.
+
+The owner separately reports successful installation in Claude and ChatGPT and that
+agents can reach Knowledgebase. This is owner-reported connectivity evidence; automated
+checks here do not prove authenticated skill invocation or add desktop/ChatGPT to the
+formally tested CLI scope. A genuine public version-transition refresh remains pending;
+local 0.1.1-to-0.1.2 upgrade evidence is separate.
+
+After explicit owner approval, the post-merge hosted
+[ingest check](https://github.com/cooperativ-labs/overlord-marketplace/actions/runs/40553374416)
+succeeded on the published commit: `prepare` passed, `publish` was skipped and no new
+release PR was opened. This confirms the expected no-op independently of the local run.
+
+### Earlier Knowledgebase 0.1.2 candidate verification
+
+Fetched the public release through the normal ingest path, with no private source access.
+Both manifests report 0.1.2/MIT and both package roots contain the complete MIT license.
+The lock records:
+
+| Item | SHA-256 |
+| --- | --- |
+| Index | `951fbf9f197b33c378550734dd0a238030052fd29ab9767a4319ede55a1edfd8` |
+| Codex ZIP | `e70c26460383442c47cc79922fb0397106793bd88209e9801f50e22bafb33be3` |
+| Codex tree | `de62dd824072ec5f0f53671038d676da196fe38836386e72ea012caef65fedf1` |
+| Claude Code ZIP | `5baa369ce0fe20c6c0eb099f90689e25ea8dc838dc29f6e2dbf180a32748f810` |
+| Claude Code tree | `a44a23c205bb67b31aba7008a1cb84ac8dc9350b8615c9e6d647dfe7672b1ecb` |
+
+All 98 tests, released validation, immutable comparison with public `main`, personal-path/
+email audit and disposable native-host first-install/refresh/migration checks passed.
+The disposable two-host upgrade from public 0.1.1 to candidate 0.1.2 also passed,
+including active versions/trees, repeat refresh and unrelated-state preservation.
+Gitleaks 8.30.1 (temporary Darwin arm64 binary, checked against its release checksum)
+scanned the distribution with the repository configuration and found no leaks.
+
+Fresh remote refs show `main` at `620d9b6cec84bffd2bb4cf17d755c04c27babb29`;
+its Knowledgebase package/lock remain at 0.1.1. The GitHub-hosted
+[validate run](https://github.com/cooperativ-labs/overlord-marketplace/actions/runs/40541426950)
+passed for that commit, not for the local 0.1.2 candidate. The corrected candidate has not
+been committed or pushed by this session. Authenticated fresh-session skill invocation,
+read-only MCP/OAuth, desktop, public 0.1.2 first install and live 0.1.2 refresh remain
+unverified. Read-only repository API checks found no repository rulesets. Secret names
+include `MARKETPLACE_APP_ID` and `MARKETPLACE_APP_PRIVATE_KEY`, but there are no repository
+variables: the workflow requires the missing `MARKETPLACE_APP_CLIENT_ID` variable,
+not the older App ID secret. No secret values were read. A no-op ingest dispatch remains
+pending; the recent Actions listing contains only the successful validate run.
+
+### Earlier 0.1.1 acceptance rerun
 
 Final local acceptance rerun, 2026-10-27: Node 26.12.1, Codex CLI 0.164.0 and
 Claude Code 2.1.311 on macOS. The 98 tests and released-state validation passed,
@@ -292,28 +355,23 @@ preclude advertising either host as fully accepted.
 
 ### Publication handoff
 
-The review candidate is the local marketplace tooling, workflows, policies, two catalogs,
-and the unmodified Knowledgebase 0.1.1 host packages and lock described below; it excludes
-Overlord and Scribe. Its local base is `66600f8ec567ae9fbb8c8d7923cf326f27e099fc`;
-the last successful remote observation found `main` at that same commit. Recheck all
-remote refs before publication, since this rerun could not reach GitHub. Candidate files
-are uncommitted; prepare and review their exact content without including `.overlord/`.
+Public main now includes the unmodified Knowledgebase 0.1.2 host packages and lock.
+It excludes Overlord and Scribe. The local README/RELEASING updates record current
+publication evidence and the owner's solo-maintainer policy; they are not yet published.
+Preserve public history at `2f825a7968c232d091b95c44d49566321d1c5765` and recheck
+refs before any subsequent publication. Do not include `.overlord/` in authored changes.
 
-Publication is blocked until the owner establishes redistribution permission and required
-notices for both rendered packages, completes the full secret
-scan and authenticated acceptance for each host to be advertised, and rechecks live
-release and remote refs. A higher upstream release with MIT notices is the recommended
-path; do not edit the generated packages to add them. The public first-install, desktop,
-and later real-release upgrade observations are separate gates as described above.
+Licensing/notices, local secret scan, App-backed ingest, release-PR CI and public CLI
+first-install/unchanged-refresh are evidenced. Owner-reported agent connectivity does
+not independently prove all fresh-session skills. Desktop and a genuine public-release
+upgrade remain separate observations. Local native-host smoke is not authenticated
+runtime acceptance.
 
-After those prerequisites, explicit authorization is still needed to commit and push the
-reviewed candidate to the existing remote without rewriting its history, activate the
-scheduled ingest and issue-writing workflows, create/install the repository-scoped App,
-store its Client ID variable and private-key secret, and configure the no-bypass `main`
-ruleset requiring `validate` and review. The exact settings and first validation and
-no-op ingest dispatch commands are in Publication setup above. GitHub-hosted workflow
-results and public first-install evidence must be obtained after those actions; per:214
-onboarding waits for the latter. Real user plugin migration is not authorized.
+Initial public CLI installation evidence and the successful hosted no-op ingest check
+are now available to dependent objective per:214.fp80; that
+Knowledgebase objective owns onboarding updates. Further documentation publication or
+configuration changes require authorization. Real user plugin migration remains outside
+this work.
 
 ### Earlier local evidence
 

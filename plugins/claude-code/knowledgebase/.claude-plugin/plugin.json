@@ -1,14 +1,14 @@
 {
   "name": "knowledgebase",
   "displayName": "Knowledgebase",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Search, read, and write your Knowledgebase knowledge graph from Claude Code over its hosted MCP server.",
   "author": {
     "name": "Knowledgebase",
     "url": "https://knowledge.chaselubitz.com"
   },
   "homepage": "https://knowledge.chaselubitz.com",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": ["knowledgebase", "notes", "knowledge graph", "mcp", "wiki", "transcripts"],
   "mcpServers": "./.mcp.json"
 }

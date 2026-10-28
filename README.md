@@ -4,11 +4,11 @@ A Git-backed plugin marketplace for Codex and Claude Code, maintained by the Ove
 project. You install and explicitly refresh ecosystem plugins with each host's native
 commands, without hand-editing a personal marketplace file or downloading ZIPs.
 
-> **Status: not yet published.** Nothing here has been pushed to the public GitHub
-> repository, and nothing below has been verified against it. Every command below
-> describes the intended release. They have only been tested in disposable local profiles
-> against a local copy of this repository. This notice is removed once a public first
-> install succeeds; see [RELEASING.md](RELEASING.md#last-verified).
+> **Published: Knowledgebase 0.1.2.** First installation and unchanged refresh from the
+> public GitHub marketplace passed in disposable Codex CLI and Claude Code CLI profiles
+> on 2026-10-27. Installed versions, package hashes and MCP endpoint registrations matched
+> the release lock. Authenticated skill execution is a separate acceptance check;
+> see [RELEASING.md](RELEASING.md#last-verified) for evidence and scope limits.
 
 ## Supported scope
 
