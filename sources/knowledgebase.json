@@ -2,7 +2,7 @@
   "$schema": "../schemas/source.schema.json",
   "schemaVersion": 1,
   "plugin": "knowledgebase",
-  "deploymentUrl": "https://knowledge.chaselubitz.com",
+  "deploymentUrl": "https://knowledge.ovld.ai",
   "index": "/plugins/index.json",
   "surfacePolicy": "remote-http-mcp-only",
   "hosts": {
@@ -27,8 +27,8 @@
       }
     }
   },
-  "allowedMcpOrigins": ["https://knowledge.chaselubitz.com"],
-  "allowedMcpUrls": ["https://knowledge.chaselubitz.com/mcp"],
+  "allowedMcpOrigins": ["https://knowledge.ovld.ai"],
+  "allowedMcpUrls": ["https://knowledge.ovld.ai/mcp"],
   "expectedMcpServers": ["knowledgebase"],
   "maxArtifactBytes": 5000000,
   "maxExpandedBytes": 20000000,
