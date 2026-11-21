@@ -1,21 +1,21 @@
 {
   "lockVersion": 1,
   "plugin": "knowledgebase",
-  "version": "0.1.2",
-  "sourceSha256": "cd98bff143f575c80be04fb1aa69a45bcc9421e24fbf380693e4bca7de586aaa",
-  "indexSha256": "951fbf9f197b33c378550734dd0a238030052fd29ab9767a4319ede55a1edfd8",
-  "fetchedAt": "2026-10-27T16:39:15.669Z",
+  "version": "0.1.3",
+  "sourceSha256": "2ca37d08b261280ef2f5109caa969711d5e026047c331b527e7f43864340a993",
+  "indexSha256": "9c1afbeb8ae561777b13809382e1fca49d3e2367f6de6fdf33ba431b8767aa49",
+  "fetchedAt": "2026-11-21T11:33:27.255Z",
   "hosts": {
     "codex": {
-      "url": "https://knowledge.chaselubitz.com/plugins/knowledgebase-chatgpt.zip",
-      "zipSha256": "e70c26460383442c47cc79922fb0397106793bd88209e9801f50e22bafb33be3",
-      "treeSha256": "de62dd824072ec5f0f53671038d676da196fe38836386e72ea012caef65fedf1",
+      "url": "https://knowledge.ovld.ai/plugins/knowledgebase-chatgpt.zip",
+      "zipSha256": "406d0104413b2a55e810e135aaf384c05ef5cee0b869d25598dbb3c2bb00780d",
+      "treeSha256": "3368d82b30843f39270e93da9609ebbb40835d4fad0cb6eb23a80ccfd36490e1",
       "fileCount": 8
     },
     "claude-code": {
-      "url": "https://knowledge.chaselubitz.com/plugins/knowledgebase-claude-code.zip",
-      "zipSha256": "5baa369ce0fe20c6c0eb099f90689e25ea8dc838dc29f6e2dbf180a32748f810",
-      "treeSha256": "a44a23c205bb67b31aba7008a1cb84ac8dc9350b8615c9e6d647dfe7672b1ecb",
+      "url": "https://knowledge.ovld.ai/plugins/knowledgebase-claude-code.zip",
+      "zipSha256": "49f22235244c6d6b1bee51fb181758b868f9e4d93ab635c57a30b17d72c8cc9e",
+      "treeSha256": "cdc73cb326687447f2b330d74e5cc67182696e42bf3f2bf22a169a7bd6eee2a4",
       "fileCount": 6
     }
   }

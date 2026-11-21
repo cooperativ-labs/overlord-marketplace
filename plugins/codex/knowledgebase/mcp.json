@@ -3,7 +3,7 @@
   "mcpServers": {
     "knowledgebase": {
       "type": "streamable-http",
-      "url": "https://knowledge.chaselubitz.com/mcp"
+      "url": "https://knowledge.ovld.ai/mcp"
     }
   }
 }

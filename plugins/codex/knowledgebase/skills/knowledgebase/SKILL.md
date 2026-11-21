@@ -7,7 +7,7 @@ description: Use when the user asks about, wants to record, or wants to change a
 
 The Knowledgebase is a typed knowledge graph: Markdown pages that are also entities
 (person, company, project, meeting, …) joined by typed relations. The MCP server at
-`https://knowledge.chaselubitz.com/mcp` exposes it. Every tool acts as the signed-in user and can never do
+`https://knowledge.ovld.ai/mcp` exposes it. Every tool acts as the signed-in user and can never do
 more than they can.
 
 ## Read: find first, then open
@@ -86,8 +86,8 @@ argument of the same `create_node` or `edit_file` call:
   `create_relation_type`) are refused with `403` until the user allows those
   capabilities on this connection in Settings → Connected agents. Tell the user
   rather than retrying.
-- Web links like `https://knowledge.chaselubitz.com/w/<workspace>/<path>` map to `read_file` of
-  `kb://<workspace>/<path>`; `https://knowledge.chaselubitz.com/agents.md?path=<page>` explains any page URL.
+- Web links like `https://knowledge.ovld.ai/w/<workspace>/<path>` map to `read_file` of
+  `kb://<workspace>/<path>`; `https://knowledge.ovld.ai/agents.md?path=<page>` explains any page URL.
 
 ## Feature ideas
 

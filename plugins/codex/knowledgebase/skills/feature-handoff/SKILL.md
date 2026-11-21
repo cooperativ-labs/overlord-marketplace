@@ -6,7 +6,7 @@ description: Use when the user asks to hand a ready Knowledgebase Feature to Ove
 # Feature handoff
 
 Turns one `ready` Feature into one **draft** Overlord mission and links them. It runs
-through the Knowledgebase MCP server at `https://knowledge.chaselubitz.com/mcp` and the agent's own,
+through the Knowledgebase MCP server at `https://knowledge.ovld.ai/mcp` and the agent's own,
 separately authenticated Overlord MCP tools. Knowledgebase never holds Overlord
 credentials, and nothing here launches the mission. The `knowledgebase` skill's
 "Feature ideas" section describes the Feature model; nightly status sync is in the
@@ -24,7 +24,7 @@ kb-feature:<origin>/<workspace slug>/<node uuid>
 <origin>/n/<node uuid>
 ```
 
-`<origin>` is the origin of `https://knowledge.chaselubitz.com` (scheme, host and non-default port, no path and
+`<origin>` is the origin of `https://knowledge.ovld.ai` (scheme, host and non-default port, no path and
 no trailing slash); `<workspace slug>` is the `workspace` argument you use; `<node uuid>`
 is the Feature's node ID in lower case. Never identify a Feature by its title or path.
 Matching in Overlord is exact, case-sensitive and whole-token.
