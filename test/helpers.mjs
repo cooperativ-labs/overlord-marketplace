@@ -62,7 +62,7 @@ export async function repoSource() {
 export async function releaseArtifacts(dir, version, body = 'Body') {
   const { execFileSync } = await import('node:child_process');
   const { createHash } = await import('node:crypto');
-  const origin = 'https://knowledge.chaselubitz.com';
+  const origin = 'https://knowledge.ovld.ai';
   const zips = {};
   for (const host of ['codex', 'claude-code']) {
     const files = {};

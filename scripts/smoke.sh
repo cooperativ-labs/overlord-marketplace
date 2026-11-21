@@ -56,7 +56,7 @@ git config --global credential.helper ''
 git config --global 'url.file://'"$root"'/remote.git.insteadOf' https://github.com/cooperativ-labs/overlord-marketplace.git
 cd "$root/work"
 if [[ $base_present == 1 ]]; then expected="$root/base"; else expected="$root/candidate"; fi
-python3 "$scriptdir/smoke-fixtures.py" "$root" "$expected"
+python3 "$scriptdir/smoke-fixtures.py" "$root" "$root/candidate"
 mkdir -p "$HOME/.agents/plugins"
 cat > "$HOME/.agents/plugins/marketplace.json" <<'JSON'
 {"name":"overlord-local","plugins":[{"name":"overlord","source":{"source":"local","path":"./overlord"}},{"name":"scribe","source":{"source":"local","path":"./scribe"}}]}
@@ -170,7 +170,7 @@ cd "$root/migration-work"
 # Seed static configuration; `codex mcp add` may initiate an OAuth flow.
 cat > "$CODEX_HOME/config.toml" <<'TOML'
 [mcp_servers.standalone]
-url = "https://knowledge.chaselubitz.com/mcp"
+url = "https://knowledge.ovld.ai/mcp"
 [mcp_servers.unrelated]
 url = "https://unrelated.invalid/mcp"
 TOML
@@ -187,13 +187,13 @@ for name in ('knowledgebase@overlord-local','knowledgebase@Overlord'):
     matches=[x for x in items if x['pluginId']==name and x['enabled']]
     assert len(matches)==1
     market=name.split('@')[1]; path=home/'plugins/cache'/market/'knowledgebase'/matches[0]['version']/'mcp.json'
-    assert json.loads(path.read_text())['mcpServers']['knowledgebase']['url']=='https://knowledge.chaselubitz.com/mcp'
+    assert json.loads(path.read_text())['mcpServers']['knowledgebase']['url']=='https://knowledge.ovld.ai/mcp'
 print('Codex legacy and new enabled records both own the endpoint')
 PY
 python3 - "$root/codex-duplicate-mcp.json" <<'PY'
 import json,sys
 items=json.load(open(sys.argv[1]))
-matches=[x for x in items if x['enabled'] and x['transport'].get('url')=='https://knowledge.chaselubitz.com/mcp']
+matches=[x for x in items if x['enabled'] and x['transport'].get('url')=='https://knowledge.ovld.ai/mcp']
 assert any(x['name']=='standalone' for x in matches) and len(matches)>=2
 print('Codex effective endpoint entries with standalone:', [x['name'] for x in matches])
 PY
@@ -206,10 +206,10 @@ import json,pathlib,sys
 r=pathlib.Path(sys.argv[1]); entries=json.loads((r/'codex-migrated.json').read_text())['installed']
 assert [x['pluginId'] for x in entries if x['name']=='knowledgebase' and x['enabled']]==['knowledgebase@Overlord']
 servers=json.loads((r/'codex-migrated-mcp.json').read_text())
-assert sum(x['enabled'] and x['transport'].get('url')=='https://knowledge.chaselubitz.com/mcp' for x in servers)==1
+assert sum(x['enabled'] and x['transport'].get('url')=='https://knowledge.ovld.ai/mcp' for x in servers)==1
 assert any(x['name']=='unrelated' and x['transport'].get('url')=='https://unrelated.invalid/mcp' for x in servers)
 PY
-claude mcp add --scope user --transport http standalone https://knowledge.chaselubitz.com/mcp
+claude mcp add --scope user --transport http standalone https://knowledge.ovld.ai/mcp
 claude mcp add --scope user --transport http unrelated https://unrelated.invalid/mcp
 claude plugin marketplace add "$root/legacy"
 claude plugin install knowledgebase@knowledgebase
@@ -221,7 +221,7 @@ import json,sys
 items=json.load(open(sys.argv[1]))
 for name in ('knowledgebase@knowledgebase','knowledgebase@Overlord'):
     matches=[x for x in items if x['id']==name and x['enabled']]
-    assert len(matches)==1 and matches[0]['mcpServers']['knowledgebase']['url']=='https://knowledge.chaselubitz.com/mcp'
+    assert len(matches)==1 and matches[0]['mcpServers']['knowledgebase']['url']=='https://knowledge.ovld.ai/mcp'
 print('Claude legacy and new plugin records both supply the endpoint')
 PY
 claude plugin uninstall knowledgebase@knowledgebase --scope user
@@ -230,19 +230,19 @@ claude plugin list --json > "$root/claude-migrated.json"
 python3 - "$root/claude-migrated.json" <<'PY'
 import json,sys
 items=json.load(open(sys.argv[1]))
-matches=[x for x in items if x['enabled'] and any(s.get('url')=='https://knowledge.chaselubitz.com/mcp' for s in x.get('mcpServers',{}).values())]
+matches=[x for x in items if x['enabled'] and any(s.get('url')=='https://knowledge.ovld.ai/mcp' for s in x.get('mcpServers',{}).values())]
 assert len(matches)==1 and matches[0]['id']=='knowledgebase@Overlord'
 PY
 claude mcp get unrelated | grep -F 'https://unrelated.invalid/mcp'
 # The legacy plugin and standalone server can also live in project or local scope.
 for scope in project local; do
   claude plugin install knowledgebase@knowledgebase --scope "$scope"
-  claude mcp add --scope "$scope" --transport http standalone https://knowledge.chaselubitz.com/mcp
+  claude mcp add --scope "$scope" --transport http standalone https://knowledge.ovld.ai/mcp
   claude plugin list --json > "$root/claude-scoped.json"
   python3 - "$root/claude-scoped.json" "$scope" <<'PY'
 import json,sys
 matches=[x for x in json.load(open(sys.argv[1])) if x['id']=='knowledgebase@knowledgebase' and x['scope']==sys.argv[2] and x['enabled']]
-assert len(matches)==1 and matches[0]['mcpServers']['knowledgebase']['url']=='https://knowledge.chaselubitz.com/mcp'
+assert len(matches)==1 and matches[0]['mcpServers']['knowledgebase']['url']=='https://knowledge.ovld.ai/mcp'
 PY
   claude plugin uninstall knowledgebase@knowledgebase --scope "$scope"
   claude mcp remove --scope "$scope" standalone
@@ -252,7 +252,7 @@ claude plugin list --json > "$root/claude-migrated.json"
 python3 - "$root/claude-migrated.json" <<'PY'
 import json,sys
 items=json.load(open(sys.argv[1]))
-matches=[x for x in items if x['enabled'] and any(s.get('url')=='https://knowledge.chaselubitz.com/mcp' for s in x.get('mcpServers',{}).values())]
+matches=[x for x in items if x['enabled'] and any(s.get('url')=='https://knowledge.ovld.ai/mcp' for s in x.get('mcpServers',{}).values())]
 assert len(matches)==1 and matches[0]['id']=='knowledgebase@Overlord'
 PY
 echo 'smoke: first install, refresh, preservation, and isolated migration checks passed'

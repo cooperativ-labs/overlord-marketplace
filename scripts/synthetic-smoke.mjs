@@ -23,13 +23,13 @@ try {
       if (host === 'codex') {manifest.$schema='https://agent-plugins.org/schemas/1.0.0/plugin.schema.json'; manifest.extensions={'com.openai':{interface:{logo:'./assets/logo.png'}}}; files[prefix+'assets/logo.png']='image';}
       else manifest.mcpServers='./.mcp.json';
       files[prefix+(host==='codex'?'plugin.json':'.claude-plugin/plugin.json')]=JSON.stringify(manifest);
-      files[prefix+(host==='codex'?'mcp.json':'.mcp.json')]=JSON.stringify({...host==='codex'?{$schema:'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json'}:{},mcpServers:{knowledgebase:{type:host==='codex'?'streamable-http':'http',url:'https://knowledge.chaselubitz.com/mcp'}}});
+      files[prefix+(host==='codex'?'mcp.json':'.mcp.json')]=JSON.stringify({...host==='codex'?{$schema:'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json'}:{},mcpServers:{knowledgebase:{type:host==='codex'?'streamable-http':'http',url:'https://knowledge.ovld.ai/mcp'}}});
       for (const name of ['knowledgebase','feature-ranking','feature-handoff']) files[`${prefix}skills/${name}/SKILL.md`]=`---\nname: ${name}\ndescription: Synthetic test skill\n---\n${marker}\n`;
       const zip=join(root,host+'.zip');
       execFileSync('python3',['-c','import json,sys,zipfile\nf=json.load(sys.stdin)\nwith zipfile.ZipFile(sys.argv[1],"w") as z:\n for k,v in f.items(): z.writestr(k,v)',zip],{input:JSON.stringify(files),env});
       zips[host]=await readFile(zip); await rm(zip);
     }
-    const origin='https://knowledge.chaselubitz.com';
+    const origin='https://knowledge.ovld.ai';
     const index={version,codex:{plugin_package:origin+'/plugins/codex.zip',plugin_package_sha256:sha256Hex(zips.codex)},claude:{claude_code:{plugin_package:origin+'/plugins/claude-code.zip',plugin_package_sha256:sha256Hex(zips['claude-code'])}}};
     const fetcher=async url=>url.endsWith('index.json')?new Response(JSON.stringify(index),{headers:{'content-type':'application/json'}}):new Response(zips[url.endsWith('/codex.zip')?'codex':'claude-code'],{headers:{'content-type':'application/zip'}});
     await ingest(root,'knowledgebase',{fetcher});

@@ -4,15 +4,16 @@ import hashlib, json, pathlib, sys
 root, expected = map(pathlib.Path, sys.argv[1:])
 lock = json.loads((expected / 'sources/knowledgebase.lock.json').read_text())
 version = lock['version']
+endpoint = json.loads((expected / 'plugins/codex/knowledgebase/mcp.json').read_text())['mcpServers']['knowledgebase']['url']
 codex = json.loads((root / 'codex-list.json').read_text())['installed']
 entries = [x for x in codex if x['pluginId'] == 'knowledgebase@Overlord']
 assert len(entries) == 1 and entries[0]['enabled'] and entries[0]['installed'] and entries[0]['version'] == version
 mcp = json.loads((root / 'codex-mcp.json').read_text())
-assert sum(x['enabled'] and x['transport'].get('url') == 'https://knowledge.chaselubitz.com/mcp' for x in mcp) == 1
+assert sum(x['enabled'] and x['transport'].get('url') == endpoint for x in mcp) == 1
 claude = json.loads((root / 'claude-list.json').read_text())
 entries = [x for x in claude if x['id'] == 'knowledgebase@Overlord']
 assert len(entries) == 1 and entries[0]['enabled'] and entries[0]['version'] == version
-assert entries[0]['mcpServers']['knowledgebase']['url'] == 'https://knowledge.chaselubitz.com/mcp'
+assert entries[0]['mcpServers']['knowledgebase']['url'] == endpoint
 paths = {'codex': root / 'home/.codex/plugins/cache/Overlord/knowledgebase' / version, 'claude-code': pathlib.Path(entries[0]['installPath'])}
 for host, cache in paths.items():
     package = expected / 'plugins' / host / 'knowledgebase'

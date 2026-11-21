@@ -21,7 +21,7 @@ const failsWith = async (repo, fragment) => {
 
 async function lockFor(repo, overrides = {}) {
   const bytes = await readFile(repo.path('sources/knowledgebase.json'));
-  const host = (name) => ({ url: `https://knowledge.chaselubitz.com/plugins/${name}.zip`, zipSha256: 'a'.repeat(64), treeSha256: 'b'.repeat(64), fileCount: 5 });
+  const host = (name) => ({ url: `https://knowledge.ovld.ai/plugins/${name}.zip`, zipSha256: 'a'.repeat(64), treeSha256: 'b'.repeat(64), fileCount: 5 });
   return {
     lockVersion: 1,
     plugin: 'knowledgebase',

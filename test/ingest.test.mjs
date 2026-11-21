@@ -9,7 +9,7 @@ import { validateRepo } from '../scripts/validate.mjs';
 import { sha256Hex } from '../scripts/lib/sources.mjs';
 
 async function artifacts(repo, version, body = 'Body') {
-  const origin = 'https://knowledge.chaselubitz.com';
+  const origin = 'https://knowledge.ovld.ai';
   const zips = {};
   for (const host of ['codex','claude-code']) {
     const files = {};

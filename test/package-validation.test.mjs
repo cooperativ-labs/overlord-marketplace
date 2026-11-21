@@ -14,14 +14,14 @@ async function release(repo, version = '1.0.0') {
   for (const host of ['codex', 'claude-code']) {
     const target = `plugins/${host}/knowledgebase`;
     for (const name of ['knowledgebase','feature-ranking','feature-handoff']) await repo.write(`${target}/skills/${name}/SKILL.md`, `---\nname: ${name}\ndescription: A skill\n---\nBody\n`);
-    const mcp = {mcpServers:{knowledgebase:{type:host === 'codex' ? 'streamable-http' : 'http', url:'https://knowledge.chaselubitz.com/mcp'}}};
+    const mcp = {mcpServers:{knowledgebase:{type:host === 'codex' ? 'streamable-http' : 'http', url:'https://knowledge.ovld.ai/mcp'}}};
     const manifest = {name:'knowledgebase',version,description:'Example'};
     if (host === 'codex') { manifest.extensions = {'com.openai':{interface:{logo:'./assets/logo.png'}}}; await repo.write(`${target}/assets/logo.png`, 'image'); }
     else manifest.mcpServers = './.mcp.json';
     await repo.writeJson(`${target}/${source.hosts[host].manifest}`, manifest);
     await repo.writeJson(`${target}/${host === 'codex' ? 'mcp.json' : '.mcp.json'}`, mcp);
     const tree = await treeDigest(repo.path(target));
-    lock.hosts[host] = {url:`https://knowledge.chaselubitz.com/plugins/${host}.zip`,zipSha256:'a'.repeat(64),treeSha256:tree.sha256,fileCount:tree.fileCount};
+    lock.hosts[host] = {url:`https://knowledge.ovld.ai/plugins/${host}.zip`,zipSha256:'a'.repeat(64),treeSha256:tree.sha256,fileCount:tree.fileCount};
     const catalog = host === 'codex' ? '.agents/plugins/marketplace.json' : '.claude-plugin/marketplace.json';
     await repo.edit(catalog, c => { c.plugins = [expectedEntry(host, source)]; });
   }

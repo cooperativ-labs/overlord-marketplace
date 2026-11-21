@@ -210,7 +210,7 @@ test('audit flags personal paths and email addresses and passes the real distrib
   const dir = await temp('audit');
   git(dir, 'init', '-q');
   await writeFile(join(dir, 'bad.md'), `see ${home}/notes and write to ${email}\n`);
-  await writeFile(join(dir, 'ok.sh'), 'HOME="$root/home/.config" git -c user.email=smoke@example.invalid\nurl=https://user@knowledge.chaselubitz.com\nnpm i @openai/codex@0.164.0 knowledgebase@Overlord\n');
+  await writeFile(join(dir, 'ok.sh'), 'HOME="$root/home/.config" git -c user.email=smoke@example.invalid\nurl=https://user@knowledge.ovld.ai\nnpm i @openai/codex@0.164.0 knowledgebase@Overlord\n');
   await mkdir(join(dir, '.overlord')); await writeFile(join(dir, '.overlord', 'project.json'), `${home}\n`);
   assert.deepEqual(await audit(dir), [`bad.md:1: home path ${home}`, `bad.md:1: email address ${email}`]);
   assert.deepEqual(await audit(REPO_ROOT), []);

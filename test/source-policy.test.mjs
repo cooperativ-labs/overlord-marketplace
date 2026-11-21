@@ -18,8 +18,8 @@ async function mutated(fn) {
 test('the reviewed Knowledgebase source pointer passes schema and policy', async () => {
   const source = await repoSource();
   assert.deepEqual(check(source), []);
-  assert.equal(source.deploymentUrl, 'https://knowledge.chaselubitz.com');
-  assert.deepEqual(source.allowedMcpUrls, ['https://knowledge.chaselubitz.com/mcp']);
+  assert.equal(source.deploymentUrl, 'https://knowledge.ovld.ai');
+  assert.deepEqual(source.allowedMcpUrls, ['https://knowledge.ovld.ai/mcp']);
   assert.deepEqual(source.expectedMcpServers, ['knowledgebase']);
   assert.equal(source.surfacePolicy, 'remote-http-mcp-only');
   assert.equal(source.hosts.codex.target, 'plugins/codex/knowledgebase');
@@ -27,11 +27,11 @@ test('the reviewed Knowledgebase source pointer passes schema and policy', async
 });
 
 const rejections = {
-  'plain HTTP deployment': (s) => { s.deploymentUrl = 'http://knowledge.chaselubitz.com'; },
-  'deployment with trailing slash': (s) => { s.deploymentUrl = 'https://knowledge.chaselubitz.com/'; },
-  'deployment with a path': (s) => { s.deploymentUrl = 'https://knowledge.chaselubitz.com/app'; },
-  'deployment with userinfo': (s) => { s.deploymentUrl = 'https://user@knowledge.chaselubitz.com'; },
-  'deployment with a port': (s) => { s.deploymentUrl = 'https://knowledge.chaselubitz.com:8443'; },
+  'plain HTTP deployment': (s) => { s.deploymentUrl = 'http://knowledge.ovld.ai'; },
+  'deployment with trailing slash': (s) => { s.deploymentUrl = 'https://knowledge.ovld.ai/'; },
+  'deployment with a path': (s) => { s.deploymentUrl = 'https://knowledge.ovld.ai/app'; },
+  'deployment with userinfo': (s) => { s.deploymentUrl = 'https://user@knowledge.ovld.ai'; },
+  'deployment with a port': (s) => { s.deploymentUrl = 'https://knowledge.ovld.ai:8443'; },
   'deployment with uppercase host': (s) => { s.deploymentUrl = 'https://Knowledge.chaselubitz.com'; },
   'index with traversal': (s) => { s.index = '/plugins/../secret.json'; },
   'index with query': (s) => { s.index = '/plugins/index.json?token=x'; },
@@ -48,9 +48,9 @@ const rejections = {
   'unknown host': (s) => { s.hosts.cursor = s.hosts.codex; },
   'unknown top-level field': (s) => { s.indexUrl = 'https://example.com/index.json'; },
   'MCP URL off the allowed origins': (s) => { s.allowedMcpUrls = ['https://evil.example.com/mcp']; },
-  'MCP URL with query': (s) => { s.allowedMcpUrls = ['https://knowledge.chaselubitz.com/mcp?key=1']; },
-  'MCP URL over HTTP': (s) => { s.allowedMcpUrls = ['http://knowledge.chaselubitz.com/mcp']; },
-  'MCP origin with path': (s) => { s.allowedMcpOrigins = ['https://knowledge.chaselubitz.com/mcp']; },
+  'MCP URL with query': (s) => { s.allowedMcpUrls = ['https://knowledge.ovld.ai/mcp?key=1']; },
+  'MCP URL over HTTP': (s) => { s.allowedMcpUrls = ['http://knowledge.ovld.ai/mcp']; },
+  'MCP origin with path': (s) => { s.allowedMcpOrigins = ['https://knowledge.ovld.ai/mcp']; },
   'no expected MCP server': (s) => { s.expectedMcpServers = []; },
   'artifact limit above ceiling': (s) => { s.maxArtifactBytes = 50_000_001; },
   'per-file limit above 2 MB': (s) => { s.maxFileBytes = 2_000_001; },
@@ -79,8 +79,8 @@ test('source ids are bounded kebab-case', () => {
 });
 
 test('canonical origins', () => {
-  assert.equal(canonicalOrigin('https://knowledge.chaselubitz.com'), 'https://knowledge.chaselubitz.com');
-  for (const raw of ['https://knowledge.chaselubitz.com/', 'http://a.example', 'https://a.example:443', 'not a url']) {
+  assert.equal(canonicalOrigin('https://knowledge.ovld.ai'), 'https://knowledge.ovld.ai');
+  for (const raw of ['https://knowledge.ovld.ai/', 'http://a.example', 'https://a.example:443', 'not a url']) {
     assert.equal(canonicalOrigin(raw), null, raw);
   }
 });
