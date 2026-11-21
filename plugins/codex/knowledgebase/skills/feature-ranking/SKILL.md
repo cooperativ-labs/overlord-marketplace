@@ -7,7 +7,7 @@ description: Use when asked to rank, re-rank or prioritise the Feature ideas of 
 
 Ranks each Project's candidate Features and records the result on the Feature's
 `project` relation to that Project. It runs through the Knowledgebase MCP server at
-`https://knowledge.chaselubitz.com/mcp`, invoked by a person or by an external scheduler. Scheduling, runners and
+`https://knowledge.ovld.ai/mcp`, invoked by a person or by an external scheduler. Scheduling, runners and
 credentials live outside the Knowledgebase; this skill is only the procedure. The
 `knowledgebase` skill's "Feature ideas" section describes the Feature model; follow it for
 anything not covered here.
